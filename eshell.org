@@ -1,0 +1,106 @@
+- Redirect to buffers with > #<buff name>. Find buffers with C-c M-b
+- =find-name-dired PATTERN DIR= ::
+  find pattern in dir, open in dired
+- /dev/kill ::
+  the kill ring or create custom devices (e.g. for capture templates)
+- predicates ::
+  M-x =eshell-display-predicate-help=, e.g. ls *(.) to show all files or / instead of . for dirs
+
+* TODO auto open new buffers from eshell
+* Cool Commands
+
+eshell-execute-file - run a script in eshell
+
+* Control Flow
+
+‘if CONDITIONAL { TRUE-COMMANDS }’
+‘if CONDITIONAL { TRUE-COMMANDS } { FALSE-COMMANDS }’
+
+‘unless CONDITIONAL { FALSE-COMMANDS }’
+‘unless CONDITIONAL { FALSE-COMMANDS } { TRUE-COMMANDS }’
+
+‘while CONDITIONAL { COMMANDS }’
+
+‘until CONDITIONAL { COMMANDS }’
+
+‘for VAR in LIST... { COMMANDS }’
+
+* Variable Expansion
+
+$VAR
+${COMMAND}
+$(LISP)
+$<file> -- writes to a tmp file and returns the name
+
+$EXPR[REGEXP] evaluate expression and split on regex
+
+* TODO [#C] revisit -- globbing, predicates
+* Extras
+
+‘count ITEM SEQ [OPTION]...’
+     A wrapper around the function ‘cl-count’ (*note (cl)Searching
+     Sequences::).  This command can be used for comparing lists of
+     strings.
+
+‘expr STR [SEPARATOR] [ARG]...’
+     An implementation of ‘expr’ using the Calc package.  *Note
+     (calc)Top::.
+
+‘ff DIRECTORY PATTERN’
+     Shorthand for the function ‘find-name-dired’ (*note (emacs)Dired
+     and Find::).
+
+‘gf DIRECTORY REGEXP’
+     Shorthand for the function ‘find-grep-dired’ (*note (emacs)Dired
+     and Find::).
+
+‘intersection LIST1 LIST2 [OPTION]...’
+     A wrapper around the function ‘cl-intersection’ (*note (cl)Lists as
+     Sets::).  This command can be used for comparing lists of strings.
+
+‘mismatch SEQ1 SEQ2 [OPTION]...’
+     A wrapper around the function ‘cl-mismatch’ (*note (cl)Searching
+     Sequences::).  This command can be used for comparing lists of
+     strings.
+
+‘set-difference LIST1 LIST2 [OPTION]...’
+     A wrapper around the function ‘cl-set-difference’ (*note (cl)Lists
+     as Sets::).  This command can be used for comparing lists of
+     strings.
+
+‘set-exclusive-or LIST1 LIST2 [OPTION]...’
+     A wrapper around the function ‘cl-set-exclusive-or’ (*note
+     (cl)Lists as Sets::).  This command can be used for comparing lists
+     of strings.
+
+‘substitute NEW OLD SEQ [OPTION]...’
+     A wrapper around the function ‘cl-substitute’ (*note (cl)Sequence
+     Functions::).  This command can be used for comparing lists of
+     strings.
+
+‘union LIST1 LIST2 [OPTION]...’
+     A wrapper around the function ‘cl-union’ (*note (cl)Lists as
+     Sets::).  This command can be used for comparing lists of strings.
+[[info:eshell#Argument Modifiers][eshell#Argument Modifiers]]
+
+* Cool Aliases
+
+- =ff . "*.el"= :: opens a dired buffer
+
+- intersection
+- listify
+- union
+- mismatch
+
+* Modifiers & Predicates
+
+Modifiers and predicates can be used inside of parens immediately following a glob
+
+e.g. =ls *(^/)= will list all non-directories
+modifiers are similar but have a =:=, e.g. =echo *(:U)= converts to uppercase
+
+-
+
+* Articles
+
+https://www.masteringemacs.org/article/complete-guide-mastering-eshell

@@ -1,0 +1,33 @@
+* Syscalls
+
+- maintain separation of programs by exposing an API for interfacing with the kernel
+
+- read, write, close :: file io
+- socket, connect :: create a socket, connect to it
+
+** Creating a Process
+
+- fork :: creates a child process by copying the current one, including it's address space
+- getpid :: get the current pid. returns 0 in the child process or the pid of the child otherwise
+- execve :: replace the running command in the current process. This takes a path to the executable to run, copies it into the CPU, and runs it. This clears the running address space. Note that after calling =execve=, because the current address space is replaced, the program never evaluates code subsequent to the =execve= call
+- wait :: if the command is synchronous, wait for the result
+- write :: write the result, e.g. if you did ls > file.txt
+
+Pseudocode example, similar to =posix_spawn()=
+
+#+BEGIN_SRC C
+pid = fork()
+
+// after forking, because we duplicate the address space
+if (pid == 0) {
+    execve(...)
+}
+
+// rest
+#+END_SRC
+
+
+** Fork
+
+- Clones the address space (stack, heap, cpu state) of the process it's called in
+- This means that we essentially duplicate what's currently running, the child resumes from the current process it's forked from
