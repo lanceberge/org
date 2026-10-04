@@ -1,0 +1,300 @@
+* Format Specifiers
+
+fmt.Printf
+
+- =%T= :: print the type
+
+* const
+
+infers subsequent types from the first declared one
+
+#+BEGIN_SRC go
+type Status int
+
+const (
+    Pending Status = iota
+    Running
+    Complete
+
+    Foo string = "foo"
+    Bar
+    Baz
+)
+#+END_SRC
+
+* Control Flow
+
+if with a statement
+
+#+BEGIN_SRC go
+if v := Math.pow(x, n); v < lim {
+
+}
+#+END_SRC
+
+switch with nothing is like =switch true= (cleaner syntax for if-else chains)
+
+** Looping
+
+#+BEGIN_SRC go-ts
+nums := []{1, 2, 3}
+
+for i, v := range(nums) {
+
+}
+
+// or
+for i := range(nums) {}
+#+END_SRC
+
+
+* Structs
+
+#+BEGIN_SRC go-ts
+type Vertex struct {
+    X int,
+    Y int
+}
+
+v := Vertex{1, 2}
+v.X = 4
+
+p = &v
+fmt.Println(p.X) // this also works
+#+END_SRC
+
+* Slices
+
+Use instead of arraylist/vector
+
+** Fundamentals
+
+Slices don't store any heap data, just metadata around the slice of heap data they are referencing
+
+#+BEGIN_SRC go-ts
+a := []bool{true, false, true} // this is a slice which references the array
+a := [3]bool{true, false, true} // this is an array literal
+#+END_SRC
+
+if you are going to append, use slices. if it's always a fixed size, use array literals. otherwise default to slices
+
+#+BEGIN_SRC go-ts
+a := [3]{true, false, true}
+
+s := a[:]
+s = append(s, false) // creates a copy of a on the heap, does arraylist style approx doubling of the original 3 size array
+
+s // has false at the end
+a // didn't get it appended
+#+END_SRC
+
+slices default to nil. e.g. =var s []int= has a "zero-value" (default) of nil
+
+if you want to create one with an initial size and zero-values on the heap:
+
+#+BEGIN_SRC go-ts
+a := make([]int, 5) // creates [0, 0, 0, 0, 0]
+
+// or
+initial_size := 0
+a := make([]int, initial_size, 5) // creates [] w/ cap 5
+#+END_SRC
+
+** Vs. array literals
+
+- =[]int{1, 2, 3}= :: is a slice
+- =[3]int{1, 2, 3}= :: is an array literal (since it has a fixed length)
+
+* Maps
+
+#+BEGIN_SRC go-ts
+var m map[string]Vertex
+
+m := make(map[string]Vertex)
+
+// or
+var m = map[string]Vertex{
+    "Bell Labs": Vertex{
+        40.68433, -74.39967,
+    },
+    "Google": Vertex{
+        37.42202, -122.08408,
+    },
+}
+
+elem, ok := m["Bell Labs"]
+delete(m, "Bell Labs")
+#+END_SRC
+
+* Functions as values
+
+#+BEGIN_SRC go-ts
+func compute(fn func(float64, float64) float64) float64 }
+    return fn(3, 4)
+}
+#+END_SRC
+
+** closures
+
+#+BEGIN_SRC go-ts
+func closure() func(int) int {
+    x := 64
+
+    return func(y int) int {
+            return x + y
+        }
+}
+#+END_SRC
+
+stateful closures
+
+#+BEGIN_SRC go-ts
+package main
+
+import "fmt"
+
+func fibonacci() func() int {
+    first := -1
+    last := 1
+    return func() int {
+        prev_last := last
+        last = first + last
+        first = prev_last
+        return last
+    }
+}
+
+func main() {
+    f := fibonacci()
+    for i := 0; i < 10; i++ {
+        fmt.Println(f())
+    }
+}
+#+END_SRC
+
+* Methods
+
+#+BEGIN_SRC go-ts
+package main
+
+import (
+    "fmt"
+    "math"
+)
+
+type Vertex struct {
+    X, Y float64
+}
+
+// or use v *Vertex if the method will modify fields in v
+func (v Vertex) Abs() float64 {
+    return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+
+func main() {
+    v := Vertex{3, 4}
+    fmt.Println(v.Abs())
+}
+#+END_SRC
+
+* Interfaces
+
+#+BEGIN_SRC go-ts
+type Abser interface {
+    Abs() float64
+}
+
+type Reader interface {
+    Read()
+}
+
+type Writer interface {
+    Write()
+}
+
+type Lexer interface {
+    Reader
+    Writer
+}
+#+END_SRC
+
+** Stringer
+
+an interface like a java toString, this i used by Println and you must implement string()
+* Types
+
+type assertions
+
+#+BEGIN_SRC go-ts
+s, ok := i.(string)
+
+// or
+s := i.(string)
+
+switch i.(type) {
+case int:
+    // ...
+}
+#+END_SRC
+* Concurrency
+
+- when a function receives from a channel, it blocks until a value is sent
+- buffered channels don't block
+
+** RWLock
+
+Multiple readers can acquire RLocks
+Once a writer acquires the Lock, all readers must finish before the write occurs
+If a reader acquires an RLock when the Lock is present, the write must finish before subsequent reads occur
+
+* Concurrency Patterns
+
+** Functions that return a channel
+
+  #+BEGIN_SRC go-ts
+func boring(msg string) <-chan string { // return a receive-only channel
+    // call the goroutine
+        // return the channel
+}
+  #+END_SRC
+
+** Fan-In Functions
+
+#+BEGIN_SRC go-ts
+func fanIn(input1, input2 chan string) <- chan string {
+    c := make(chan string)
+    go func() { for { c <- <-input1 } }
+    go func() { for { c <- <-input2 } }
+    return c
+}
+#+END_SRC
+
+** Select
+
+- Blocks until one statement can execute
+
+  #+BEGIN_SRC go-ts
+func fanIn(input1, input2 chan string) <- chan string {
+    c := make(chan string)
+
+        go func() {
+                for {
+                        select {
+                        case s := <-input1: c <- s
+                        case s := <-input2: c <- s
+                        }
+                }
+    }()
+
+    return c
+}
+  #+END_SRC
+
+** Buffered vs. Unbuffered Channels
+
+Unbuffered: Sending waits for a receiver
+Buffered: If you have an =n= size buffered channel, you can send =n= values without a receiver. Sending waits when full
+
+** Receiving from a Closed Channel
+
+This sends the default result for that type. E.g. 0 for ints
