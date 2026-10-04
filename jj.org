@@ -1,0 +1,150 @@
+* basics
+
+#+BEGIN_SRC sh
+jj new master # update your working tree to master
+jj describe -m "Add ..." # describe your changes
+jj bookmark create <name>
+
+## or if the bookmark already existed: jj bookmark set my-feature -r @ then jj git push
+jj git push --allow-new
+
+jj git fetch
+jj rebase -b risk-metrics -d master
+jj git push
+
+jj diff # diff of the working copy and parent commit
+jj diff -r A..B
+
+jj new # creates a new empty commit. The parent becomes whatever the previous one is
+jj describe # describes the commit
+
+jj edit @- # jump to your previous location
+
+# tracking a branch
+jj bookmark track brach@origin
+
+# describes the commit then starts a new commit
+jj commit -m ""
+#+END_SRC
+
+* Rebasing branches
+
+# squash style
+jj git fetch
+jj bookmark track branch@origin # make local branch track origin's branch
+jj new branch
+jj rebase -s @ -d origin/master # rebase just the current commit
+
+# resolve conflicts
+jj squash
+jj git push
+
+or without switching branches
+
+jj git fetch
+jj rebase -b branch -d origin/master
+jj git push # or jj git push -b <bookmark>
+
+* Squash Workflow
+
+#+BEGIN_SRC sh
+jj new -m "main commit"
+jj new
+# make changes, when they're ready
+jj squash # add -i to only add some of the changes w/ a TUI. use SPC to select, f to toggle folding, c to confirm
+jj bookmark set my-branch -r @-
+jj git push --allow-new
+
+# make more changes
+jj squash
+jj git push
+#+END_SRC
+
+
+jj squash -i
+jj squash <rev>
+
+jj abandon <rev> # delete a commit
+
+
+jj squash --into abc file1 file2
+
+* Navigating the Lack of an Index
+
+e.g. say you have changes you want locally but not in the remote
+
+create a new commit, fix up what you want, jj bookmark set and jj git push, then jj edit @-
+
+or:
+jj split # add some files to one commit vs another. the selected files go to @- and unselected goes to @
+
+* Squash Merging a Branch
+
+#+BEGIN_SRC sh
+jj git fetch # pulls down origin, advances local master
+jj new master # work on top of fresh master
+jj restore --from your-branch
+jj describe -m "squash message"
+jj bookmark advance
+jj git push
+#+END_SRC
+
+* Merging
+
+#+BEGIN_SRC sh
+# start a new change w/ two parents
+jj new parent1 parent2
+
+jj undo # undo the last change
+#+END_SRC
+
+* jj op
+
+#+BEGIN_SRC sh
+jj op revert <op> # inverse an operation
+jj op restore <op> # update your file system to what it was at op
+#+END_SRC
+
+* misc commands
+
+#+BEGIN_SRC sh
+jj file list #  list all tracked files
+jj restore # like git reset --hard
+jj restore <paths> # abandon working copy changes in paths
+jj restore --from <rev> --to @ # --to @ can be ommitted
+jj abandon # abandon the current commit
+jj diffedit -r <rev> # interactively edit the diff of rev
+jj duplicate <source> -d <dest> # copy a commit form source on top of dest, like git cherry-pick. -A for after and -B for before
+jj workspace root # get project root
+jj file annotate <path> # analogous to git blame
+#+END_SRC
+
+** jj absorb
+
+- similar to jj squash but instead of folding changes into one commit, it folds them into multiple
+  - it finds the most recent ancestor that touched each hunk then amends it into those commits
+
+* Stuff to start using
+
+- jj bookmark move
+- jj bookmark rename --overwrite-existing
+- jj evolog -r @-
+
+* Combining multiple commits into one
+
+Say you have
+A
+|
+B
+|
+C
+
+and want to oneshot combine them into one, run =jj squash --from 'B::A' -t C=
+
+* Divergent Commits
+
+#+BEGIN_SRC config
+ divergent-keep = ["log", "-r", "divergent() & ::(remote_bookmarks(remote=origin) | bookmarks() | working_copies())"]
+ divergent-drop = ["log", "-r", "divergent() ~ ::(remote_bookmarks(remote=origin) | bookmarks() | working_copies())"]
+ divergent-clean = ["abandon", "divergent() ~ ::(remote_bookmarks(remote=origin) | bookmarks() | working_copies())"]
+#+END_SRC
